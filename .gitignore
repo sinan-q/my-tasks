@@ -7,12 +7,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# dependencies
 node_modules
 dist
 dist-ssr
 *.local
 
+# Databases
+UserRefreshTokens
+Users.db
+.env
+
+
 # Editor directories and files
+package-lock.json
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,3 +30,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# production
+/build
