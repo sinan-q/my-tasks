@@ -21,6 +21,8 @@ app.use("/auth", require('./routes/auth.js'))
 
 app.use(authenticated)
 app.use('/user', require('./routes/user.js'))
+app.use('/task', require('./routes/task.js'))
+
 
 app.listen(port, () => {
     console.log(`http://localhost:${port}`)
