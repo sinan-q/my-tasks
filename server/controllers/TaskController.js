@@ -6,10 +6,10 @@ const tasks = DataStore.create('Tasks.db')
 
 const get = async ( req, res) => {
     try {
-        const tasks = await tasks.find({ user: req.user.id})
+        const allTasks = await tasks.find({ user: req.user.id })
 
         return res.status(200).json({
-            data: tasks? tasks.length : "Empty Array" 
+            data: allTasks? allTasks.length : "Empty" 
         })
     } catch (error) {
         return res.status(500).json({ message: error.message})

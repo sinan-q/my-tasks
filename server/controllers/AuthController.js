@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const registerUser = async ( req, res) => {
     try {
@@ -14,8 +13,7 @@ const registerUser = async ( req, res) => {
         
         if (!username || !password) return res.status(422).json({ message: "Please fill in all fields"})
         const v1 = USER_REGEX.test(username);
-        const v2 = PWD_REGEX.test(password);
-        if (!v1 || !v2) return res.status(422).json({ message: "Invalid Entry"})
+        if (!v1) return res.status(422).json({ message: "Invalid Entry"})
         
         if (await users.findOne({ username})) return res.status(409).json({message: "User already exists"})
         const hashedPassword = await bcrypt.hash(password, 10)
