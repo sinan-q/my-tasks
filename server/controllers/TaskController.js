@@ -9,7 +9,7 @@ const get = async ( req, res) => {
         const allTasks = await tasks.find({ user: req.user.id })
 
         return res.status(200).json({
-            data: allTasks? allTasks.length : "Empty" 
+            data: allTasks
         })
     } catch (error) {
         return res.status(500).json({ message: error.message})
@@ -17,7 +17,7 @@ const get = async ( req, res) => {
 }
 const add = async ( req, res) => {
     try {
-        const { name, parent = null, exptime = null, status = false} = req.body
+        const { name, parent = null, exptime = null, status = 0} = req.body
         
         if (!name) return res.status(422).json({ message: "Please fill in all fields"})
      
@@ -36,5 +36,6 @@ const add = async ( req, res) => {
         return res.status(500).json({ message: error.message})
     }
 }
+
 
 module.exports = { get, add }
