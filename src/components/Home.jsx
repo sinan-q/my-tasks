@@ -27,9 +27,10 @@ const Home = () => {
         }   
     }
     
-    const sendData = async () => {
+    const addTask = async (name, parent, exptime = null, status = 0) => {
         try {
-            //const response = await axiosPrivate.post('/wa/send',JSON.stringify({ data }));
+            if (!name && name==="") return toast("Invalid Entry")
+            const response = await axiosPrivate.post('/task',JSON.stringify({ name, parent, exptime, status }));
             toast(response.data.message)
         } catch (err) {
             toast(err.response?.data?.message || err.message)
@@ -54,17 +55,22 @@ const Home = () => {
                 return <TaskCard 
                     key={task._id}  
                     task={task}
+                    addTask={addTask}
                 />
             })}
+            <TaskAddCard
+            parent={null}
+            addTask={addTask}    
+            />
             <button className="border bg-slate-500 text-white rounded-md p-4  hover:bg-slate-400 flex hover:text-white fixed right-12 items-center bottom-12   ">
                 <MdAdd/> 
-                <div className="  "onClick={signOut}>Add Task</div>
+                <div className="  "onClick={()=> {}}>Add Task</div>
             </button>
         </div>
     )
 }
 
-const TaskCard = ({task}) => {
+const TaskCard = ({task, addTask}) => {
     const [toggle, setToggle] = useState(false)
 
   return (
@@ -80,14 +86,18 @@ const TaskCard = ({task}) => {
             <div className="">{toggle?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }</div>
         </button>
     </div>
-    { toggle && <div className="mx-2">
+    { toggle && <div className="ms-4 me-1">
         {task.childs && task.childs.map((task) => 
             <TaskCard
                 key={task._id}
                 task={task}
+                addTask={addTask}
             />
         )}
-        <TaskAddCard />
+        <TaskAddCard
+            parent={task._id}
+            addTask={addTask}    
+        />
 
         </div>}
   </div>
@@ -96,14 +106,14 @@ const TaskCard = ({task}) => {
 }
 
 
-const TaskAddCard = ({task}) => {
+const TaskAddCard = ({parent, addTask}) => {
     const [name, setName] = useState("");
   return (
   <div className="pb-4">
     <div className="w-full border p-2 flex justify-between  items-center  border-black">
-        <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Add SubTask" ></input>
+        <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
-            <button onClick={() => {}} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
+            <button onClick={() => addTask(name, parent)} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
         </div>
     </div>
   </div>
