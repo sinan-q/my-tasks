@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import toast from "react-simple-toasts";
-import { MdOutlineDone, MdClose, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
+import { MdOutlineDone, MdClose, MdDeleteForever, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
 
 
 const Home = () => {
@@ -38,6 +38,16 @@ const Home = () => {
         }
     }
 
+    const deleteTask = async (id) => {
+        try {
+            const response = await axiosPrivate.post('/task/remove',JSON.stringify({ id }));
+            toast(response.data.message)
+        } catch (err) {
+            toast(err.response?.data?.message || err.message)
+  
+        }
+    }
+
     useEffect(() => {
         getData()
     }, [])
@@ -51,13 +61,15 @@ const Home = () => {
                 <button className=" border p-2 m-auto text-center w-full hover:bg-red-400 hover:text-white "onClick={signOut}>Sign Out</button>
             </div>
             <div className='text-3xl text-center mb-8'>Tasks</div>
-            { tasks && tasks.map(task => {
-                return <TaskCard 
-                    key={task._id}  
-                    task={task}
-                    addTask={addTask}
-                />
-            })}
+                { tasks && tasks.map(task => {
+                    return <TaskCard 
+                        key={task._id}  
+                        task={task}
+                        addTask={addTask}
+                        deleteTask={deleteTask}
+                    />
+                })}
+            
             <TaskAddCard
             parent={null}
             addTask={addTask}    
@@ -70,21 +82,26 @@ const Home = () => {
     )
 }
 
-const TaskCard = ({task, addTask}) => {
+const TaskCard = ({task, addTask, deleteTask}) => {
     const [toggle, setToggle] = useState(false)
 
   return (
-  <div className="">
-    <div className="w-full border p-2 flex justify-between  items-center  border-black">
+  <div className=" even:bg-slate-50">
+    <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
         <div className="left flex items-center">
             <button className="p-2 border text-white hover:text-black me-2"><MdOutlineDone /></button>
             <div>{task.name}</div>
             <div>{task.exptime}</div>
         </div>
+        <div className="flex">
+            <button onClick={() => deleteTask(task._id)} className="p-2 border hover:bg-red-400">
+                <MdDeleteForever />
+            </button>
+            <button onClick={() => setToggle(prev => !prev)} className="p-2 border">
+                {toggle?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }
+            </button>
+        </div>
         
-        <button onClick={() => setToggle(prev => !prev)} className="p-2 border flex">
-            <div className="">{toggle?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }</div>
-        </button>
     </div>
     { toggle && <div className="ms-4 me-1">
         {task.childs && task.childs.map((task) => 
@@ -92,6 +109,7 @@ const TaskCard = ({task, addTask}) => {
                 key={task._id}
                 task={task}
                 addTask={addTask}
+                deleteTask={deleteTask}
             />
         )}
         <TaskAddCard
@@ -110,7 +128,7 @@ const TaskAddCard = ({parent, addTask}) => {
     const [name, setName] = useState("");
   return (
   <div className="pb-4">
-    <div className="w-full border p-2 flex justify-between  items-center  border-black">
+    <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
             <button onClick={() => addTask(name, parent)} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 

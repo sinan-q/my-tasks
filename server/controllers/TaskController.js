@@ -36,20 +36,44 @@ const add = async ( req, res) => {
         if (!name) return res.status(422).json({ message: "Please fill in all fields"})
      
         if (await tasks.findOne({ name, parent})) return res.status(409).json({message: "task already exists"})
-        await tasks.insert({
+        const task = {
             name,
             parent,
             user: req.user.id,
             created: Date.now(),
             exptime,
             status
-        })
+        }
+        await tasks.insert(task)
     
-        return res.status(201).json({ message: "Task added"})
+        return res.status(201).json({ message: "Task added", task: task})
     } catch (error) {
         return res.status(500).json({ message: error.message})
     }
 }
 
+const remove = async ( req, res) => {
+    try {
+        const { id } = req.body
+        let allTasks = await tasks.find({ user: req.user.id })
 
-module.exports = { get, add }
+        if (!id) return res.status(422).json({ message: "Invalid Entry"})
+        const recursion = async (id) => {
+            const childs = await tasks.find({parent: id})
+            if (childs && childs.length>0) 
+                childs.map((item) => {
+                    recursion(item._id)
+                }) 
+            await tasks.deleteOne({_id: id})
+            return
+        }
+        await recursion(id)
+        return res.status(200).json({
+            message: "Deleted Task" 
+        })
+    } catch (error) {
+        return res.status(500).json({ message: error.message})
+    }
+}
+
+module.exports = { get, add, remove }
