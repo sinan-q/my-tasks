@@ -44,9 +44,8 @@ const add = async ( req, res) => {
             exptime,
             status
         }
-        await tasks.insert(task)
-    
-        return res.status(201).json({ message: "Task added", task: task})
+        result = await tasks.insert(task)
+        return res.status(201).json({ message: "Task added", task: result})
     } catch (error) {
         return res.status(500).json({ message: error.message})
     }

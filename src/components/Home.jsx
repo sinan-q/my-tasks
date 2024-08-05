@@ -10,7 +10,7 @@ const Home = () => {
     const navigate = useNavigate();
     const logout = useLogout();
     const axiosPrivate = useAxiosPrivate();
-    const [tasks, setTasks] = useState("")
+    const [tasks, setTasks] = useState([])
 
     const signOut = async () => {
         await logout();
@@ -29,11 +29,11 @@ const Home = () => {
     
     const addTask = async (name, parent, exptime = null, status = 0) => {
         try {
-            if (!name && name==="") return toast("Invalid Entry")
+            if (!name && name==="") throw toast("Invalid Entry")
             const response = await axiosPrivate.post('/task',JSON.stringify({ name, parent, exptime, status }));
-            toast(response.data.message)
+            return response.data
         } catch (err) {
-            toast(err.response?.data?.message || err.message)
+            throw (err.response?.data?.message || err.message)
   
         }
     }
@@ -42,11 +42,13 @@ const Home = () => {
         try {
             const response = await axiosPrivate.post('/task/remove',JSON.stringify({ id }));
             toast(response.data.message)
+            return response.status === 200
         } catch (err) {
             toast(err.response?.data?.message || err.message)
-  
+            return false
         }
     }
+
 
     useEffect(() => {
         getData()
@@ -71,8 +73,9 @@ const Home = () => {
                 })}
             
             <TaskAddCard
-            parent={null}
-            addTask={addTask}    
+                parent={null}
+                addTask={addTask}
+                deleteTask={deleteTask}
             />
             <button className="border bg-slate-500 text-white rounded-md p-4  hover:bg-slate-400 flex hover:text-white fixed right-12 items-center bottom-12   ">
                 <MdAdd/> 
@@ -83,9 +86,15 @@ const Home = () => {
 }
 
 const TaskCard = ({task, addTask, deleteTask}) => {
+    const [deleted,setDeleted] = useState(false)
     const [toggle, setToggle] = useState(false)
 
-  return (
+    const onClick = () => {
+        deleteTask(task._id).then((result) => {
+            result && setDeleted(true)
+        })
+    }
+  return ( !deleted &&
   <div className=" even:bg-slate-50">
     <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
         <div className="left flex items-center">
@@ -94,7 +103,8 @@ const TaskCard = ({task, addTask, deleteTask}) => {
             <div>{task.exptime}</div>
         </div>
         <div className="flex">
-            <button onClick={() => deleteTask(task._id)} className="p-2 border hover:bg-red-400">
+            <button onClick={onClick} 
+                className="p-2 border hover:bg-red-400">
                 <MdDeleteForever />
             </button>
             <button onClick={() => setToggle(prev => !prev)} className="p-2 border">
@@ -114,7 +124,8 @@ const TaskCard = ({task, addTask, deleteTask}) => {
         )}
         <TaskAddCard
             parent={task._id}
-            addTask={addTask}    
+            addTask={addTask} 
+            deleteTask={deleteTask} 
         />
 
         </div>}
@@ -124,14 +135,42 @@ const TaskCard = ({task, addTask, deleteTask}) => {
 }
 
 
-const TaskAddCard = ({parent, addTask}) => {
+const TaskAddCard = ({parent, addTask, deleteTask}) => {
     const [name, setName] = useState("");
-  return (
+    const [exptime, setExptime] = useState("");
+
+    const [task, setTask] = useState(null)
+
+    const onClick = () => {
+        addTask(name, parent)
+            .then((res) => {
+                //toast(res.message)
+                toast(res.task._id)
+                console.log(JSON.stringify(res.task))
+                setTask(res.task)
+            })
+            .catch((err) => toast(err))
+    }
+  return ( task ? 
+    <>
+    <TaskCard
+        key={task._id}
+        task={task}
+        addTask={addTask}
+        deleteTask={deleteTask}
+    />
+    <TaskAddCard 
+        parent={task._id}
+        addTask={addTask}
+        deleteTask={deleteTask}
+    />
+    </>
+    :
   <div className="pb-4">
     <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
-            <button onClick={() => addTask(name, parent)} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
+            <button onClick={onClick} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
         </div>
     </div>
   </div>
