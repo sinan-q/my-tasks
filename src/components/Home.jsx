@@ -77,10 +77,7 @@ const Home = () => {
                 addTask={addTask}
                 deleteTask={deleteTask}
             />
-            <button className="border bg-slate-500 text-white rounded-md p-4  hover:bg-slate-400 flex hover:text-white fixed right-12 items-center bottom-12   ">
-                <MdAdd/> 
-                <div className="  "onClick={()=> {}}>Add Task</div>
-            </button>
+            
         </div>
     )
 }
