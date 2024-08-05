@@ -16,10 +16,11 @@ const Home = () => {
         await logout();
         navigate('/auth/login');
     }
-    const getData = async () => {
+    const getTasks = async (parent = null) => {
         try {
-            const response = await axiosPrivate.get('/task')
-            setTasks(response.data.data)
+            const response = await axiosPrivate.post('/task/get', JSON.stringify({parent}))
+            return response.data.data
+
             //toast(response.data.message)
 
         } catch (err) {
@@ -51,7 +52,8 @@ const Home = () => {
 
 
     useEffect(() => {
-        getData()
+        getTasks().then((tasks) => setTasks( tasks ))
+        
     }, [])
 
     
@@ -69,6 +71,7 @@ const Home = () => {
                         task={task}
                         addTask={addTask}
                         deleteTask={deleteTask}
+                        getTasks={getTasks}
                     />
                 })}
             
@@ -82,9 +85,24 @@ const Home = () => {
     )
 }
 
-const TaskCard = ({task, addTask, deleteTask}) => {
+const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     const [deleted,setDeleted] = useState(false)
     const [toggle, setToggle] = useState(false)
+    const [loading, setLoading] = useState(false)
+    
+    const setToggl = () => {
+        if (!toggle && !task.childs) {
+            setLoading(true)
+            getTasks(task._id).then((result) => {
+                task.childs = result
+                setLoading(false)
+                setToggle(true)
+            })
+        } else {
+            setToggle(prev => !prev)
+
+        }
+    }
 
     const onClick = () => {
         deleteTask(task._id).then((result) => {
@@ -104,25 +122,28 @@ const TaskCard = ({task, addTask, deleteTask}) => {
                 className="p-2 border hover:bg-red-400">
                 <MdDeleteForever />
             </button>
-            <button onClick={() => setToggle(prev => !prev)} className="p-2 border">
+            <button onClick={() => setToggl()} className="p-2 border">
                 {toggle?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }
             </button>
         </div>
         
     </div>
-    { toggle && <div className="ms-4 me-1">
+    { toggle && !loading && <div className="ms-4  me-1">
         {task.childs && task.childs.map((task) => 
             <TaskCard
                 key={task._id}
                 task={task}
                 addTask={addTask}
                 deleteTask={deleteTask}
+                getTasks={getTasks}
             />
         )}
         <TaskAddCard
-            parent={task._id}
+            task={task}
             addTask={addTask} 
             deleteTask={deleteTask} 
+            getTasks={getTasks}
+
         />
 
         </div>}
@@ -132,34 +153,39 @@ const TaskCard = ({task, addTask, deleteTask}) => {
 }
 
 
-const TaskAddCard = ({parent, addTask, deleteTask}) => {
+const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [name, setName] = useState("");
     const [exptime, setExptime] = useState("");
 
-    const [task, setTask] = useState(null)
+    const [added, setAdded] = useState(null)
 
     const onClick = () => {
-        addTask(name, parent)
+        addTask(name, task._id)
             .then((res) => {
                 //toast(res.message)
                 toast(res.task._id)
                 console.log(JSON.stringify(res.task))
-                setTask(res.task)
+                task.childs && task.childs.push(res.task)
+                setAdded(res.task)
             })
             .catch((err) => toast(err))
     }
-  return ( task ? 
+  return ( added ? 
     <>
     <TaskCard
-        key={task._id}
-        task={task}
+        key={added._id}
+        task={added}
         addTask={addTask}
         deleteTask={deleteTask}
+        getTasks={getTasks}
+
     />
     <TaskAddCard 
-        parent={task._id}
+        parent={added}
         addTask={addTask}
         deleteTask={deleteTask}
+        getTasks={getTasks}
+
     />
     </>
     :

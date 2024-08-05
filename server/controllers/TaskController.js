@@ -6,24 +6,11 @@ const tasks = DataStore.create('Tasks.db')
 
 const get = async ( req, res) => {
     try {
-        const { parent = null, limit = 10} = req.body
-        let allTasks = await tasks.find({ user: req.user.id })
-        let parentTasks = allTasks.filter(task => task.parent === parent)
-        const recusrion = (child, level = 0) => {
-            if(level===limit) return child
-            child.map((task) =>{
-                const childs = allTasks.filter(alltask => alltask.parent === task._id)
-
-                if (childs && childs.length!=0) {
-                    task.childs = recusrion(childs, level + 1)
-                } 
-                return task
-            })
-            return child
-        }
-        recusrion(parentTasks)
+        console.log(JSON.stringify(req.body))
+        const { parent = null } = req.body
+        const task = await tasks.find({ user: req.user.id , parent })
         return res.status(200).json({
-            data: parentTasks
+            data: task
         })
     } catch (error) {
         return res.status(500).json({ message: error.message})
@@ -73,6 +60,10 @@ const remove = async ( req, res) => {
     } catch (error) {
         return res.status(500).json({ message: error.message})
     }
+}
+
+const getPath = async () => {
+
 }
 
 module.exports = { get, add, remove }
