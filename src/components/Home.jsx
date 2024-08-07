@@ -65,28 +65,39 @@ const Home = () => {
                 <button className=" border p-2 m-auto text-center w-full hover:bg-red-400 hover:text-white "onClick={signOut}>Sign Out</button>
             </div>
             <div className='text-3xl text-center mb-8'>Tasks</div>
-                { tasks && tasks.map(task => {
-                    return <TaskCard 
-                        key={task._id}  
-                        task={task}
-                        addTask={addTask}
-                        deleteTask={deleteTask}
-                        getTasks={getTasks}
-                    />
-                })}
-            
-            <TaskAddCard
-                task = {
-                    {_id:null}
-                }
+            <TaskTree
+                tasks={tasks}
                 addTask={addTask}
                 deleteTask={deleteTask}
                 getTasks={getTasks}
+                parent={
+                    {_id:null}
+                }
             />
             
         </div>
     )
 }
+
+const TaskTree = ({tasks,addTask,deleteTask,getTasks, parent}) => {
+    return (<>
+        { tasks && tasks.map(task => {
+            return <TaskCard 
+            key={task._id}  
+            task={task}
+            addTask={addTask}
+            deleteTask={deleteTask}
+            getTasks={getTasks}
+            />
+        })}
+
+        <TaskAddCard
+            task = {parent}
+            addTask={addTask}
+            deleteTask={deleteTask}
+            getTasks={getTasks}
+        /></>
+)}
 
 const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     const [deleted,setDeleted] = useState(false)
@@ -132,21 +143,12 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
         
     </div>
     { toggle && !loading && <div className="ms-4  me-1">
-        {task.childs && task.childs.map((task) => 
-            <TaskCard
-                key={task._id}
-                task={task}
-                addTask={addTask}
-                deleteTask={deleteTask}
-                getTasks={getTasks}
-            />
-        )}
-        <TaskAddCard
-            task={task}
-            addTask={addTask} 
-            deleteTask={deleteTask} 
+        <TaskTree 
+            tasks={task.childs}
+            addTask={addTask}
+            deleteTask={deleteTask}
             getTasks={getTasks}
-
+            parent={task}
         />
 
         </div>}
@@ -174,23 +176,13 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
             .catch((err) => toast(err))
     }
   return ( added ? 
-    <>
-    <TaskCard
-        key={added._id}
-        task={added}
+    <TaskTree 
+        tasks={[added]}
         addTask={addTask}
         deleteTask={deleteTask}
         getTasks={getTasks}
-
+        parent={task}
     />
-    <TaskAddCard 
-        task={task}
-        addTask={addTask}
-        deleteTask={deleteTask}
-        getTasks={getTasks}
-
-    />
-    </>
     :
   <div className="pb-4">
     <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
