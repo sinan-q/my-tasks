@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import toast from "react-simple-toasts";
-import { MdOutlineDone, MdClose, MdDeleteForever, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
+import { MdOutlineDone, MdClose, MdEdit, MdDeleteForever, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
+import TimePicker from "./TimePicker";
 
 
 const Home = () => {
@@ -104,7 +105,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     const [toggle, setToggle] = useState(false)
     const [loading, setLoading] = useState(false)
     
-    const setToggl = () => {
+    const onToggle = () => {
         if (!toggle && !task.childs) {
             setLoading(true)
             getTasks(task._id).then((result) => {
@@ -118,10 +119,14 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
         }
     }
 
-    const onClick = () => {
+    const onDeleteClick = () => {
         deleteTask(task._id).then((result) => {
             result && setDeleted(true)
         })
+    }
+
+    const onEdit = () => {
+        
     }
   return ( !deleted &&
   <div className=" even:bg-slate-50">
@@ -132,11 +137,15 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
             <div>{task.exptime}</div>
         </div>
         <div className="flex">
-            <button onClick={onClick} 
+        <button onClick={onEdit} 
+                className="p-2 border hover:bg-slate-400">
+                <MdEdit />
+            </button>
+            <button onClick={onDeleteClick} 
                 className="p-2 border hover:bg-red-400">
                 <MdDeleteForever />
             </button>
-            <button onClick={() => setToggl()} className="p-2 border">
+            <button onClick={onToggle} className="p-2 border hover:bg-slate-400">
                 {toggle?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }
             </button>
         </div>
@@ -161,19 +170,23 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
 const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [name, setName] = useState("");
     const [exptime, setExptime] = useState("");
+    const [timerToggle, setTimerToggle] = useState("");
 
     const [added, setAdded] = useState(null)
 
     const onClick = () => {
-        addTask(name, task?._id)
-            .then((res) => {
-                //toast(res.message)
-                toast(res.task._id)
-                console.log(JSON.stringify(res.task))
-                task.childs && task.childs.push(res.task)
-                setAdded(res.task)
-            })
-            .catch((err) => toast(err))
+        setTimerToggle(true)
+    }
+    const onSubmit = (time) => {
+        console.log(time)
+        toast(time)
+        // addTask(name, task?._id)
+        //     .then((res) => {
+        //         toast(res.message)
+        //         task.childs && task.childs.push(res.task)
+        //         setAdded(res.task)
+        //     })
+        //     .catch((err) => toast(JSON.stringify(err)))
     }
   return ( added ? 
     <TaskTree 
@@ -191,6 +204,10 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
             <button onClick={onClick} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
         </div>
     </div>
+    {timerToggle && <TimePicker
+        onCancel={setTimerToggle(false)}
+        onClick={onSubmit}
+    />}
   </div>
     
   )
