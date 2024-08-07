@@ -76,9 +76,12 @@ const Home = () => {
                 })}
             
             <TaskAddCard
-                parent={null}
+                task = {
+                    {_id:null}
+                }
                 addTask={addTask}
                 deleteTask={deleteTask}
+                getTasks={getTasks}
             />
             
         </div>
@@ -160,7 +163,7 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [added, setAdded] = useState(null)
 
     const onClick = () => {
-        addTask(name, task._id)
+        addTask(name, task?._id)
             .then((res) => {
                 //toast(res.message)
                 toast(res.task._id)
@@ -181,7 +184,7 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
 
     />
     <TaskAddCard 
-        parent={added}
+        task={task}
         addTask={addTask}
         deleteTask={deleteTask}
         getTasks={getTasks}
