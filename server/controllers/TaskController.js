@@ -62,8 +62,18 @@ const remove = async ( req, res) => {
     }
 }
 
-const getPath = async () => {
-
+const check = async ( req, res) => {
+    try {
+        const { id  } = req.body
+        const task = await tasks.find({ user: req.user.id , _id:id })
+        const status = task.status? null:  Date.now()
+        await tasks.updateOne({user: req.user.id , _id:id} , {status: time})
+        return res.status(200).json({
+            data: time
+        })
+    } catch (error) {
+        return res.status(500).json({ message: error.message})
+    }
 }
 
-module.exports = { get, add, remove }
+module.exports = { get, add, remove, check }
