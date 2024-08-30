@@ -205,7 +205,7 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
         </div>
     </div>
     {timerToggle && <TimePicker
-        onCancel={setTimerToggle(false)}
+        onCancel={() => setTimerToggle(false)}
         onClick={onSubmit}
     />}
   </div>
