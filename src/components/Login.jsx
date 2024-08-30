@@ -52,9 +52,9 @@ const Login = () => {
 
     return (
 
-        <section>
+        <section className='w-80'>
             <div className='text-3xl text-center'>Sign In</div>
-            <form className='flex pb-4 flex-col' onSubmit={handleSubmit}>
+            <form className='mt-8 flex pb-4 flex-col' onSubmit={handleSubmit}>
                 <label className='mt-3' htmlFor="username">Username:</label>
                         <input
                         className='p-1 border border-black'
@@ -77,8 +77,8 @@ const Login = () => {
                     value={pwd}
                     required
                 />
-                <button className='active:animate-fade animate-reverse mt-4  p-2 bg-black transition-colors duration-500 text-white hover:bg-white hover:text-black border hover:border-black'>Sign In</button>
-                <div className="persistCheck">
+                <button className='active:animate-fade animate-reverse mt-4  p-2 bg-black transition-colors duration-200 text-white hover:bg-white hover:text-black border hover:border-black'>Sign In</button>
+                <div className="persistCheck mt-2">
                     <input
                         className=' h-4 w-4 mb-0.5 mr-1 text-red-500'
                         type="checkbox"
