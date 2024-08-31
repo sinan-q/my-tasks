@@ -4,7 +4,8 @@ import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import toast from "react-simple-toasts";
 import { MdOutlineDone, MdClose, MdEdit, MdDeleteForever, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
-import TimePicker from "./TimePicker";
+import { Modal, DatePicker, TimePicker, Input, Space } from 'antd';
+import dayjs from 'dayjs';
 
 
 const Home = () => {
@@ -63,9 +64,9 @@ const Home = () => {
     return (
         <div className=" w-full    ">
             <div className="mt-1 fixed right-4   ">
-                <button className=" border p-2 m-auto text-center w-full hover:bg-red-400 hover:text-white "onClick={signOut}>Sign Out</button>
+                <button className=" border p-2 m-auto text-center w-full hover:bg-red-400 transition-colors hover:text-white "onClick={signOut}>Sign Out</button>
             </div>
-            <div className='text-3xl text-center mb-8'>Tasks</div>
+            <div className='animate-jump text-3xl text-center mb-8'>Tasks</div>
             <TaskTree
                 tasks={tasks}
                 addTask={addTask}
@@ -130,9 +131,9 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     }
   return ( !deleted &&
   <div className=" even:bg-slate-50">
-    <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
+    <div className="transition-colors w-full border p-2 flex justify-between  items-center  hover:border-black">
         <div className="left flex items-center">
-            <button className="p-2 border text-white hover:text-black me-2"><MdOutlineDone /></button>
+            <button className="p-2 border  text-white hover:text-black me-2"><MdOutlineDone /></button>
             <div>{task.name}</div>
             <div>{task.exptime}</div>
         </div>
@@ -173,10 +174,33 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [timerToggle, setTimerToggle] = useState("");
 
     const [added, setAdded] = useState(null)
+    const [open, setOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [modalText, setModalText] = useState('Content of the modal');
 
-    const onClick = () => {
-        setTimerToggle(true)
-    }
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const handleOk = () => {
+    setModalText('The modal will be closed after two seconds');
+    setConfirmLoading(true);
+    setTimeout(() => {
+      setOpen(false);
+      setConfirmLoading(false);
+    }, 2000);
+  };
+
+  const handleCancel = () => {
+    console.log('Clicked cancel button');
+    setOpen(false);
+  };
+
+  const onChange = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
+    
     const onSubmit = (time) => {
         console.log(time)
         toast(time)
@@ -198,16 +222,42 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     />
     :
   <div className="pb-4">
-    <div className="w-full border p-2 flex justify-between  items-center  hover:border-black">
+    <div className=" transition-colors w-full border p-2 flex justify-between  items-center  hover:border-black">
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
-            <button onClick={onClick} className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
+            <button onClick={
+                () => {
+                    Modal.confirm({
+                      title: "Add New Task",
+                      content: 
+                        <>
+                            <p className="mt-4 ">Name:</p>
+
+                            <Input size="large" placeholder="Task Name" count={{
+                                max: 10,
+                                }}
+                                defaultValue={name}
+                                 />
+                            <p className="mt-4 ">Due In:</p>
+                            <div className=" gap-2 flex ">
+                                <DatePicker 
+                                    size="large"
+                                    onChange={onChange}
+                                    minDate={dayjs()}
+                                    placeholder={dayjs(new Date()).format()}
+                                />
+                                <TimePicker placeholder={dayjs(new Date()).format("h:mm a")} use12Hours format="h:mm a" />
+                            </div>
+                            
+                        </>,
+                     
+                    });
+                  }
+            } className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
         </div>
     </div>
-    {timerToggle && <TimePicker
-        onCancel={() => setTimerToggle(false)}
-        onClick={onSubmit}
-    />}
+    
+    
   </div>
     
   )
