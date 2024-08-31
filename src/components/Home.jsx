@@ -4,8 +4,11 @@ import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import toast from "react-simple-toasts";
 import { MdOutlineDone, MdClose, MdEdit, MdDeleteForever, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
-import { Modal, DatePicker, TimePicker, Input, Cascader, InputNumber, Select, Checkbox } from 'antd';
+import { Modal, DatePicker, TimePicker, Input, InputNumber, Select, Checkbox } from 'antd';
 import dayjs from 'dayjs';
+import AnimateHeight from 'react-animate-height';
+    
+
 
 const dateFormat = "D MMM 'YY"
 const timeFormat = 'h:mm a'
@@ -106,10 +109,13 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     const [deleted,setDeleted] = useState(false)
     const [toggle, setToggle] = useState(false)
     const [loading, setLoading] = useState(false)
-    
+    const [height, setHeight] = useState(0);
+
+
     const onToggle = () => {
         if (!toggle && !task.childs) {
             setLoading(true)
+            setHeight('auto')
             getTasks(task._id).then((result) => {
                 task.childs = result
                 setLoading(false)
@@ -117,7 +123,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
             })
         } else {
             setToggle(prev => !prev)
-
+            setHeight(height === 0 ? 'auto' : 0)
         }
     }
 
@@ -128,7 +134,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     }
 
     const onEdit = () => {
-        
+
     }
   return ( !deleted &&
   <div className=" even:bg-slate-50">
@@ -141,7 +147,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
             </div>
         </div>
         <div className="flex">
-        <button onClick={onEdit} 
+            <button onClick={onEdit} 
                 className="p-2 border hover:bg-slate-400">
                 <MdEdit />
             </button>
@@ -155,7 +161,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
         </div>
         
     </div>
-    { toggle && !loading && <div className="ms-4  me-1">
+    {  !loading && <AnimateHeight height={height} className={`ms-4 transition-all duration-500 me-1`}>
         <TaskTree 
             tasks={task.childs}
             addTask={addTask}
@@ -164,7 +170,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
             parent={task}
         />
 
-        </div>}
+        </AnimateHeight>}
   </div>
     
   )
@@ -221,7 +227,7 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
         parent={task}
     />
     :
-  <div className="pb-4 animate-fade-down">
+  <div className="pb-4">
     <div className=" transition-colors w-full border p-2 flex justify-between  items-center  hover:border-black">
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
