@@ -7,6 +7,8 @@ import { MdOutlineDone, MdClose, MdEdit, MdDeleteForever, MdKeyboardArrowDown, M
 import { Modal, DatePicker, TimePicker, Input, Space } from 'antd';
 import dayjs from 'dayjs';
 
+const dateFormat = "DD/MM/YY"
+const timeFormat = 'h:mm a'
 
 const Home = () => {
     const navigate = useNavigate();
@@ -30,14 +32,13 @@ const Home = () => {
         }   
     }
     
-    const addTask = async (name, parent, exptime = null, status = 0) => {
+    const addTask = async (name, parent, dueDate = null, dueTime = null, status = 0) => {
         try {
-            if (!name && name==="") throw toast("Invalid Entry")
-            const response = await axiosPrivate.post('/task',JSON.stringify({ name, parent, exptime, status }));
+            if (!name && name==="") throw new Error("Invalid Entry")
+            const response = await axiosPrivate.post('/task',JSON.stringify({ name, parent, dueDate, dueTime, status }));
             return response.data
         } catch (err) {
-            throw (err.response?.data?.message || err.message)
-  
+            throw Error(err.response?.data?.message || err.message || err)
         }
     }
 
@@ -134,8 +135,10 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     <div className="transition-colors w-full border p-2 flex justify-between  items-center  hover:border-black">
         <div className="left flex items-center">
             <button className="p-2 border  text-white hover:text-black me-2"><MdOutlineDone /></button>
-            <div>{task.name}</div>
-            <div>{task.exptime}</div>
+            <div className="">
+                <div className="text-xs">{task.dueDate && dayjs.unix(task.dueDate).format(dateFormat)}{task.dueTime && dayjs.unix(task.dueTime).format(timeFormat)}</div>
+                <div className="text-lg">{task.name}</div>
+            </div>
         </div>
         <div className="flex">
         <button onClick={onEdit} 
@@ -170,56 +173,28 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
 
 const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [name, setName] = useState("");
-    const [dueDate, setDueDate] = useState(dayjs());
-    const [dueTime, setDueTime] = useState(dayjs());
-
-    const [timerToggle, setTimerToggle] = useState("");
+    const [dueDate, setDueDate] = useState(null);
+    const [dueTime, setDueTime] = useState(null);
 
     const [added, setAdded] = useState(null)
     const [open, setOpen] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [modalText, setModalText] = useState('Content of the modal');
-
-  const showModal = () => {
-    setOpen(true);
-  };
-
-  const handleOk = () => {
-    console.log(dueDate)
-    setConfirmLoading(true);
-    addTask(name, task?._id, dueDate.hour(dueTime.hour()).minute(dueTime.minute()).unix())
-            .then((res) => {
-                toast(res.message)
-                task.childs && task.childs.push(res.task)
-                setAdded(res.task)
-                setOpen(false);
-                setConfirmLoading(false);
-            })
-            .catch((err) => toast(JSON.stringify(err)))
-      
-  };
-
-  const handleCancel = () => {
-    console.log('Clicked cancel button');
-    setOpen(false);
-  };
-
-  const onChange = (date, dateString) => {
-    console.log(date, dateString);
-  };
-
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const handleOk = () => {
+        setConfirmLoading(true);
+        addTask(name, task?._id, dueDate?.unix(), dueTime?.unix())
+                .then((res) => {
+                    toast(res.message)
+                    task.childs && task.childs.push(res.task)
+                    setAdded(res.task)
+                    setOpen(false);
+                    setConfirmLoading(false);
+                })
+                .catch((err) => {
+                    toast(err.message)
+                    setConfirmLoading(false);
+                })
+    };    
     
-    const onSubmit = (time) => {
-        console.log(time)
-        toast(time)
-        // addTask(name, task?._id)
-        //     .then((res) => {
-        //         toast(res.message)
-        //         task.childs && task.childs.push(res.task)
-        //         setAdded(res.task)
-        //     })
-        //     .catch((err) => toast(JSON.stringify(err)))
-    }
   return ( added ? 
     <TaskTree 
         tasks={[added]}
@@ -233,16 +208,16 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     <div className=" transition-colors w-full border p-2 flex justify-between  items-center  hover:border-black">
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
-            <button onClick={
-                showModal
-            } className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
+            <button onClick={() => setOpen(true)} 
+                className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd />
+            </button> 
         </div>
         <Modal
           title="Title"
           open={open}
           onOk={handleOk}
           confirmLoading={confirmLoading}
-          onCancel={handleCancel}
+          onCancel={() => setOpen(false)}
         >
             <p className="mt-4 ">Name:</p>
 
