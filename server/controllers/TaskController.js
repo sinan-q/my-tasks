@@ -18,7 +18,7 @@ const get = async ( req, res) => {
 }
 const add = async ( req, res) => {
     try {
-        const { name, parent = null, exptime = null, status = 0} = req.body
+        const { name, parent = null, dueDate = null, dueTime = null, status = 0} = req.body
         
         if (!name) return res.status(422).json({ message: "Please fill in all fields"})
      
@@ -28,7 +28,8 @@ const add = async ( req, res) => {
             parent,
             user: req.user.id,
             created: Date.now(),
-            exptime,
+            dueDate,
+            dueTime,
             status
         }
         result = await tasks.insert(task)
