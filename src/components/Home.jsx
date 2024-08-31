@@ -170,7 +170,9 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
 
 const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [name, setName] = useState("");
-    const [exptime, setExptime] = useState("");
+    const [dueDate, setDueDate] = useState(dayjs());
+    const [dueTime, setDueTime] = useState(dayjs());
+
     const [timerToggle, setTimerToggle] = useState("");
 
     const [added, setAdded] = useState(null)
@@ -183,12 +185,18 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
   };
 
   const handleOk = () => {
-    setModalText('The modal will be closed after two seconds');
+    console.log(dueDate)
     setConfirmLoading(true);
-    setTimeout(() => {
-      setOpen(false);
-      setConfirmLoading(false);
-    }, 2000);
+    addTask(name, task?._id, dueDate.hour(dueTime.hour()).minute(dueTime.minute()).unix())
+            .then((res) => {
+                toast(res.message)
+                task.childs && task.childs.push(res.task)
+                setAdded(res.task)
+                setOpen(false);
+                setConfirmLoading(false);
+            })
+            .catch((err) => toast(JSON.stringify(err)))
+      
   };
 
   const handleCancel = () => {
@@ -226,35 +234,39 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
             <button onClick={
-                () => {
-                    Modal.confirm({
-                      title: "Add New Task",
-                      content: 
-                        <>
-                            <p className="mt-4 ">Name:</p>
-
-                            <Input size="large" placeholder="Task Name" count={{
-                                max: 10,
-                                }}
-                                defaultValue={name}
-                                 />
-                            <p className="mt-4 ">Due In:</p>
-                            <div className=" gap-2 flex ">
-                                <DatePicker 
-                                    size="large"
-                                    onChange={onChange}
-                                    minDate={dayjs()}
-                                    placeholder={dayjs(new Date()).format()}
-                                />
-                                <TimePicker placeholder={dayjs(new Date()).format("h:mm a")} use12Hours format="h:mm a" />
-                            </div>
-                            
-                        </>,
-                     
-                    });
-                  }
+                showModal
             } className=" hover:bg-slate-500 p-2 hover:text-white"><MdAdd /></button> 
         </div>
+        <Modal
+          title="Title"
+          open={open}
+          onOk={handleOk}
+          confirmLoading={confirmLoading}
+          onCancel={handleCancel}
+        >
+            <p className="mt-4 ">Name:</p>
+
+            <Input size="large" placeholder="Task Name" count={{
+                max: 10,
+                }}
+                defaultValue={name}
+                onChange={(e) => setName(e.target.value)}
+
+                />
+            <p className="mt-4 ">Due In:</p>
+            <div className=" gap-2 flex ">
+                <DatePicker 
+                    size="large"
+                    minDate={dayjs()}
+                    onChange={(date) => setDueDate(date)}
+                />
+
+                <TimePicker use12Hours format="h:mm a"                                     
+                    onChange={(time) => setDueTime(time)}
+                />
+            </div>
+        </Modal>
+        
     </div>
     
     
