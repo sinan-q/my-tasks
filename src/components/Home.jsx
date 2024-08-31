@@ -107,22 +107,18 @@ const TaskTree = ({tasks,addTask,deleteTask,getTasks, parent}) => {
 
 const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
     const [deleted,setDeleted] = useState(false)
-    const [toggle, setToggle] = useState(false)
     const [loading, setLoading] = useState(false)
     const [height, setHeight] = useState(0);
 
 
     const onToggle = () => {
-        if (!toggle && !task.childs) {
-            setLoading(true)
-            setHeight('auto')
+        if (!height && !task.childs) {
             getTasks(task._id).then((result) => {
                 task.childs = result
-                setLoading(false)
-                setToggle(true)
+                setHeight('auto')
+
             })
         } else {
-            setToggle(prev => !prev)
             setHeight(height === 0 ? 'auto' : 0)
         }
     }
@@ -156,12 +152,12 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
                 <MdDeleteForever />
             </button>
             <button onClick={onToggle} className="p-2 border hover:bg-slate-400">
-                {toggle?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }
+                {height?<MdKeyboardArrowUp />:<MdKeyboardArrowDown /> }
             </button>
         </div>
         
     </div>
-    {  !loading && <AnimateHeight height={height} className={`ms-4 transition-all duration-500 me-1`}>
+    <AnimateHeight height={height} className={`ms-4 transition-all duration-500 me-1`}>
         <TaskTree 
             tasks={task.childs}
             addTask={addTask}
@@ -170,7 +166,7 @@ const TaskCard = ({task, addTask, deleteTask, getTasks}) => {
             parent={task}
         />
 
-        </AnimateHeight>}
+    </AnimateHeight>
   </div>
     
   )
