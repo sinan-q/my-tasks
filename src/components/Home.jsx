@@ -4,10 +4,10 @@ import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import toast from "react-simple-toasts";
 import { MdOutlineDone, MdClose, MdEdit, MdDeleteForever, MdKeyboardArrowDown, MdKeyboardArrowUp, MdAdd } from "react-icons/md";
-import { Modal, DatePicker, TimePicker, Input, Space } from 'antd';
+import { Modal, DatePicker, TimePicker, Input, Cascader, InputNumber, Select, Checkbox } from 'antd';
 import dayjs from 'dayjs';
 
-const dateFormat = "DD/MM/YY"
+const dateFormat = "D MMM 'YY"
 const timeFormat = 'h:mm a'
 
 const Home = () => {
@@ -175,10 +175,27 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
     const [name, setName] = useState("");
     const [dueDate, setDueDate] = useState(null);
     const [dueTime, setDueTime] = useState(null);
-
+    const [repeating, setRepeating] = useState(false);
     const [added, setAdded] = useState(null)
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
+
+    const { Option } = Select;
+
+    const selectAfter = (
+        <Select
+          defaultValue="Day"
+          style={{
+            width: 100,
+          }}
+        >
+          <Option value="Day">Day</Option>
+          <Option value="Month">Month</Option>
+          <Option value="Year">Year</Option>
+          
+        </Select>
+      );
+
     const handleOk = () => {
         setConfirmLoading(true);
         addTask(name, task?._id, dueDate?.unix(), dueTime?.unix())
@@ -204,7 +221,7 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
         parent={task}
     />
     :
-  <div className="pb-4">
+  <div className="pb-4 animate-fade-down">
     <div className=" transition-colors w-full border p-2 flex justify-between  items-center  hover:border-black">
         <input className='w-full focus:outline-none' type="text" value={name} onChange={e => setName(e.target.value)} placeholder= {parent?"Add SubTask" : "Add Task"} ></input>
         <div className="flex justify-end align-middle">
@@ -228,6 +245,12 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
                 onChange={(e) => setName(e.target.value)}
 
                 />
+            <div className="mt-4">
+                <Checkbox onChange={(e) => setRepeating(e.target.checked)}>Repeating</Checkbox>
+                {repeating && 
+                    <InputNumber min={1} max={99} addonBefore={"Repeats in"} addonAfter={selectAfter} defaultValue={1} />
+                }  
+            </div>  
             <p className="mt-4 ">Due In:</p>
             <div className=" gap-2 flex ">
                 <DatePicker 
@@ -235,7 +258,6 @@ const TaskAddCard = ({task, addTask, deleteTask, getTasks}) => {
                     minDate={dayjs()}
                     onChange={(date) => setDueDate(date)}
                 />
-
                 <TimePicker use12Hours format="h:mm a"                                     
                     onChange={(time) => setDueTime(time)}
                 />
